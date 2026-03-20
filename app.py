@@ -12,10 +12,6 @@ def get_system_metrics():
     now = datetime.now(timezone.utc).isoformat()
     metrics = {"timestamp": now}
 
-    if psutil is None:
-        metrics["error"] = "psutil not installed"
-        return metrics
-
     # CPU
     try:
         metrics["cpu_percent"] = psutil.cpu_percent(interval=None)
@@ -42,6 +38,46 @@ def get_system_metrics():
         metrics["swap_percent"] = sw.percent
     except Exception:
         pass
+
+    # CPU temperature (if available via psutil)
+    try:
+        temps = psutil.sensors_temperatures()
+        cpu_vals = []
+        if temps:
+            # prefer common sensor keys
+            for key in ("coretemp", "cpu_thermal", "acpitz"):
+                if key in temps:
+                    cpu_sensors = temps[key]
+                    break
+            else:
+                cpu_sensors = next(iter(temps.values()))
+
+            cpu_vals = [t.current for t in cpu_sensors if getattr(t, "current", None) is not None]
+            if cpu_vals:
+                metrics["cpu_temp_avg_c"] = sum(cpu_vals) / len(cpu_vals)
+                for i, v in enumerate(cpu_vals):
+                    metrics[f"cpu_temp_core_{i}"] = v
+    except Exception:
+        cpu_vals = []
+
+    # Fallback: read from /sys/class/thermal/thermal_zone0/temp (Linux)
+    if not cpu_vals:
+        try:
+            path = "/sys/class/thermal/thermal_zone0/temp"
+            if os.path.exists(path):
+                with open(path, "r") as f:
+                    raw = f.read().strip()
+                if raw:
+                    # common units: millidegrees Celsius
+                    val = int(raw)
+                    if val > 1000:
+                        temp_c = val / 1000.0
+                    else:
+                        temp_c = float(val)
+                    metrics["cpu_temp_avg_c"] = temp_c
+                    metrics["cpu_temp_core_0"] = temp_c
+        except Exception:
+            pass
 
     return metrics
 
