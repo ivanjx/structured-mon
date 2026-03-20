@@ -2,11 +2,7 @@ import time
 import json
 import os
 from datetime import datetime, timezone
-
-try:
-    import psutil
-except Exception:
-    psutil = None
+import psutil
 
 INTERVAL = int(os.getenv("INTERVAL", "10"))
 
@@ -24,8 +20,6 @@ def get_system_metrics():
     try:
         metrics["cpu_percent"] = psutil.cpu_percent(interval=None)
         metrics["cpu_percpu_percent"] = psutil.cpu_percent(interval=None, percpu=True)
-        metrics["cpu_count_logical"] = psutil.cpu_count(logical=True)
-        metrics["cpu_count_physical"] = psutil.cpu_count(logical=False)
     except Exception:
         pass
 
