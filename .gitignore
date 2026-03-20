@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+
+# IDEs and editors
+.idea/
+.vscode/
+
+# Env files
+.env
+
+# macOS
+.DS_Store
+
+# Logs and temp files
+*.log
+*.swp
+
+# MyPy
+.mypy_cache/
+
+# Python version manager
+.python-version
